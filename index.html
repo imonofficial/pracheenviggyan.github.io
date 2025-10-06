@@ -119,6 +119,23 @@
 
     /* Delete confirmation */
     .delete-confirm{background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:8px;padding:12px;margin-top:12px}
+
+    /* PDF Upload Zone */
+    .upload-zone{border:2px dashed var(--neon-primary);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all 0.3s ease;margin-top:12px}
+    .upload-zone:hover{background:rgba(0,255,204,0.05);border-color:var(--neon-secondary)}
+    .upload-zone.active{background:rgba(0,255,204,0.1);border-color:var(--neon-accent)}
+    .upload-icon{font-size:48px;color:var(--neon-primary);margin-bottom:12px}
+    .upload-text{font-size:16px;margin-bottom:8px}
+    .upload-subtext{font-size:14px;color:#cccccc}
+    .file-input{display:none}
+
+    /* PDF Preview */
+    .pdf-preview{background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-top:12px;display:none}
+    .pdf-preview.active{display:block}
+    .pdf-preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .pdf-preview-title{font-weight:600;font-size:16px}
+    .pdf-preview-icon{color:var(--neon-primary);font-size:20px}
+    .pdf-preview-info{display:flex;gap:12px;font-size:12px;color:#cccccc}
   </style>
 </head>
 <body>
@@ -211,7 +228,7 @@
 
     <footer>
       <div class="neon-text">Advanced Neon Learning Platform</div>
-      <div>Built for immersive learning • <STRONG>New Era Of Learning</STRONG> • Works entirely in your browser</div>
+      <div>Built for immersive learning • New Era Of Learning • Works entirely in your browser</div>
     </footer>
   </div>
 
@@ -225,7 +242,7 @@
       - Admin password: PV 1234 (exact)
       - Supports: signup/login, DPP tests, notes, admin dashboard
       - PW-style DPP integration
-      - NEW: File attachments for notes, delete functionality
+      - NEW: PDF Upload functionality with drag & drop
     */
 
     // --- Utilities ---
@@ -239,16 +256,16 @@
       ],
       notes: [
         {id:uid(),cls:6,title:'What is Science?',body:'Science is the study of the natural world through observation and experiment.',subject:'Science', attachments: [
-          {id: uid(), name: 'science_intro.pdf', url: '#', type: 'pdf'},
-          {id: uid(), name: 'lab_safety.docx', url: '#', type: 'document'}
+          {id: uid(), name: 'science_intro.pdf', url: '#', type: 'pdf', size: '2.4 MB'},
+          {id: uid(), name: 'lab_safety.docx', url: '#', type: 'document', size: '1.1 MB'}
         ]},
         {id:uid(),cls:9,title:'Fundamentals of Physics',body:'Physics studies matter, energy and their interactions. Key concepts: motion, forces, energy.',subject:'Physics', attachments: [
-          {id: uid(), name: 'physics_formulas.pdf', url: '#', type: 'pdf'}
+          {id: uid(), name: 'physics_formulas.pdf', url: '#', type: 'pdf', size: '3.2 MB'}
         ]},
         {id:uid(),cls:10,title:'Chemical Reactions',body:'Chemical reactions involve breaking and forming of chemical bonds.',subject:'Chemistry'},
         {id:uid(),cls:11,title:'Calculus Basics',body:'Calculus is the mathematical study of continuous change.',subject:'Mathematics', attachments: [
-          {id: uid(), name: 'calculus_exercises.pdf', url: '#', type: 'pdf'},
-          {id: uid(), name: 'derivatives_cheatsheet.png', url: '#', type: 'image'}
+          {id: uid(), name: 'calculus_exercises.pdf', url: '#', type: 'pdf', size: '4.7 MB'},
+          {id: uid(), name: 'derivatives_cheatsheet.png', url: '#', type: 'image', size: '0.8 MB'}
         ]}
       ],
       dpp: [
@@ -332,7 +349,7 @@
                   <div class="file-icon">
                     <i class="fas fa-${getFileIcon(a.type)}"></i>
                   </div>
-                  <div class="file-name">${a.name}</div>
+                  <div class="file-name">${a.name} <span style="color:#9fc9ff;font-size:12px">(${a.size || 'Unknown size'})</span></div>
                   <div class="file-actions">
                     <button class="file-btn" onclick="downloadFile('${a.url}', '${a.name}')" title="Download">
                       <i class="fas fa-download"></i>
@@ -612,42 +629,30 @@
           <div id="n_attachments">
             <label>Attachments</label>
             <div id="n_files"></div>
-            <button type="button" id="n_addfile" class="btn secondary" style="margin-top:8px">
-              <i class="fas fa-plus"></i> Add Attachment
-            </button>
+            <div class="upload-zone" id="pdfUploadZone">
+              <div class="upload-icon">
+                <i class="fas fa-file-pdf"></i>
+              </div>
+              <div class="upload-text">Upload PDF or other files</div>
+              <div class="upload-subtext">Drag & drop files here or click to browse</div>
+              <input type="file" id="pdfFileInput" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.ppt,.pptx,.xls,.xlsx" multiple>
+            </div>
+            <div class="pdf-preview" id="pdfPreview">
+              <div class="pdf-preview-header">
+                <div class="pdf-preview-title">File Preview</div>
+                <div class="pdf-preview-icon"><i class="fas fa-file-pdf"></i></div>
+              </div>
+              <div id="pdfPreviewList"></div>
+            </div>
           </div>
           <div style="margin-top:12px">
             <button id="n_save" class="btn"><i class="fas fa-save"></i> Save Note</button>
           </div>
         `
         document.getElementById('adm_area').innerHTML = html
-        let fileCount = 0
         
-        document.getElementById('n_addfile').addEventListener('click', () => {
-          fileCount++
-          const fileDiv = document.createElement('div')
-          fileDiv.className = 'row'
-          fileDiv.style.marginTop = '8px'
-          fileDiv.innerHTML = `
-            <input type="text" placeholder="File Name" id="n_file_name_${fileCount}" style="flex:1" />
-            <select id="n_file_type_${fileCount}">
-              <option value="pdf">PDF</option>
-              <option value="document">Document</option>
-              <option value="image">Image</option>
-              <option value="spreadsheet">Spreadsheet</option>
-              <option value="presentation">Presentation</option>
-              <option value="video">Video</option>
-              <option value="audio">Audio</option>
-              <option value="archive">Archive</option>
-              <option value="code">Code</option>
-            </select>
-            <input type="text" placeholder="File URL" id="n_file_url_${fileCount}" style="flex:2" />
-            <button type="button" class="btn danger" onclick="this.parentElement.remove()">
-              <i class="fas fa-times"></i>
-            </button>
-          `
-          document.getElementById('n_files').appendChild(fileDiv)
-        })
+        // Set up the PDF upload functionality
+        setupPdfUpload()
         
         document.getElementById('n_save').addEventListener('click',()=>{
           const cls = parseInt(document.getElementById('n_cls').value); 
@@ -656,28 +661,23 @@
           const b=document.getElementById('n_body').value.trim();
           if(!t||!b){alert('Enter title and body');return}
           
-          // Collect attachments
+          // Get uploaded files from the preview area
           const attachments = []
-          for (let i = 1; i <= fileCount; i++) {
-            const nameEl = document.getElementById(`n_file_name_${i}`)
-            const typeEl = document.getElementById(`n_file_type_${i}`)
-            const urlEl = document.getElementById(`n_file_url_${i}`)
+          const fileElements = document.querySelectorAll('.file-preview-item')
+          fileElements.forEach(el => {
+            const name = el.dataset.name
+            const type = el.dataset.type
+            const size = el.dataset.size
+            const url = '#' // In a real app, this would be the uploaded file URL
             
-            if (nameEl && typeEl && urlEl) {
-              const name = nameEl.value.trim()
-              const type = typeEl.value
-              const url = urlEl.value.trim()
-              
-              if (name && url) {
-                attachments.push({
-                  id: uid(),
-                  name,
-                  type,
-                  url
-                })
-              }
-            }
-          }
+            attachments.push({
+              id: uid(),
+              name,
+              type,
+              url,
+              size
+            })
+          })
           
           state.notes.push({
             id:uid(),
@@ -815,6 +815,114 @@
         
         document.getElementById('adm_area').innerHTML = html
       })
+    }
+
+    // --- PDF Upload Functionality ---
+    function setupPdfUpload() {
+      const uploadZone = document.getElementById('pdfUploadZone')
+      const fileInput = document.getElementById('pdfFileInput')
+      const pdfPreview = document.getElementById('pdfPreview')
+      const pdfPreviewList = document.getElementById('pdfPreviewList')
+      
+      // Click to open file dialog
+      uploadZone.addEventListener('click', () => {
+        fileInput.click()
+      })
+      
+      // Handle file selection
+      fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files)
+      })
+      
+      // Drag and drop functionality
+      uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        uploadZone.classList.add('active')
+      })
+      
+      uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('active')
+      })
+      
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault()
+        uploadZone.classList.remove('active')
+        handleFiles(e.dataTransfer.files)
+      })
+    }
+    
+    function handleFiles(files) {
+      const pdfPreview = document.getElementById('pdfPreview')
+      const pdfPreviewList = document.getElementById('pdfPreviewList')
+      
+      if (files.length > 0) {
+        pdfPreview.classList.add('active')
+        
+        // Clear previous previews
+        pdfPreviewList.innerHTML = ''
+        
+        // Process each file
+        Array.from(files).forEach(file => {
+          const fileType = getFileType(file.name)
+          const fileSize = formatFileSize(file.size)
+          
+          const fileItem = document.createElement('div')
+          fileItem.className = 'file-attachment file-preview-item'
+          fileItem.dataset.name = file.name
+          fileItem.dataset.type = fileType
+          fileItem.dataset.size = fileSize
+          
+          fileItem.innerHTML = `
+            <div class="file-icon">
+              <i class="fas fa-${getFileIcon(fileType)}"></i>
+            </div>
+            <div class="file-name">
+              ${file.name} <span style="color:#9fc9ff;font-size:12px">(${fileSize})</span>
+            </div>
+            <div class="file-actions">
+              <button class="file-btn" onclick="removeFilePreview(this)" title="Remove">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          `
+          
+          pdfPreviewList.appendChild(fileItem)
+        })
+      }
+    }
+    
+    function removeFilePreview(button) {
+      const fileItem = button.closest('.file-preview-item')
+      fileItem.remove()
+      
+      // Hide preview area if no files left
+      const pdfPreview = document.getElementById('pdfPreview')
+      const fileItems = document.querySelectorAll('.file-preview-item')
+      if (fileItems.length === 0) {
+        pdfPreview.classList.remove('active')
+      }
+    }
+    
+    function getFileType(filename) {
+      const ext = filename.split('.').pop().toLowerCase()
+      if (ext === 'pdf') return 'pdf'
+      if (['doc', 'docx'].includes(ext)) return 'document'
+      if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) return 'image'
+      if (['ppt', 'pptx'].includes(ext)) return 'presentation'
+      if (['xls', 'xlsx'].includes(ext)) return 'spreadsheet'
+      if (['mp4', 'avi', 'mov', 'wmv'].includes(ext)) return 'video'
+      if (['mp3', 'wav', 'ogg'].includes(ext)) return 'audio'
+      if (['zip', 'rar', '7z'].includes(ext)) return 'archive'
+      if (['js', 'html', 'css', 'py', 'java', 'cpp'].includes(ext)) return 'code'
+      return 'file'
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes'
+      const k = 1024
+      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }
 
     // --- DPP runner ---
@@ -958,23 +1066,19 @@
       if (note.attachments && note.attachments.length) {
         note.attachments.forEach((a, index) => {
           html += `
-            <div class="row" style="margin-top:8px">
-              <input type="text" value="${a.name}" id="edit_n_file_name_${index}" style="flex:1" />
-              <select id="edit_n_file_type_${index}">
-                <option value="pdf" ${a.type === 'pdf' ? 'selected' : ''}>PDF</option>
-                <option value="document" ${a.type === 'document' ? 'selected' : ''}>Document</option>
-                <option value="image" ${a.type === 'image' ? 'selected' : ''}>Image</option>
-                <option value="spreadsheet" ${a.type === 'spreadsheet' ? 'selected' : ''}>Spreadsheet</option>
-                <option value="presentation" ${a.type === 'presentation' ? 'selected' : ''}>Presentation</option>
-                <option value="video" ${a.type === 'video' ? 'selected' : ''}>Video</option>
-                <option value="audio" ${a.type === 'audio' ? 'selected' : ''}>Audio</option>
-                <option value="archive" ${a.type === 'archive' ? 'selected' : ''}>Archive</option>
-                <option value="code" ${a.type === 'code' ? 'selected' : ''}>Code</option>
-              </select>
-              <input type="text" value="${a.url}" id="edit_n_file_url_${index}" style="flex:2" />
-              <button type="button" class="btn danger" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-              </button>
+            <div class="file-attachment">
+              <div class="file-icon">
+                <i class="fas fa-${getFileIcon(a.type)}"></i>
+              </div>
+              <div class="file-name">${a.name} <span style="color:#9fc9ff;font-size:12px">(${a.size || 'Unknown size'})</span></div>
+              <div class="file-actions">
+                <button class="file-btn" onclick="downloadFile('${a.url}', '${a.name}')" title="Download">
+                  <i class="fas fa-download"></i>
+                </button>
+                <button class="file-btn" onclick="deleteAttachment('${note.id}', '${a.id}')" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
           `
         })
@@ -982,9 +1086,21 @@
       
       html += `
             </div>
-            <button type="button" id="edit_n_addfile" class="btn secondary" style="margin-top:8px">
-              <i class="fas fa-plus"></i> Add Attachment
-            </button>
+            <div class="upload-zone" id="editPdfUploadZone">
+              <div class="upload-icon">
+                <i class="fas fa-file-pdf"></i>
+              </div>
+              <div class="upload-text">Upload PDF or other files</div>
+              <div class="upload-subtext">Drag & drop files here or click to browse</div>
+              <input type="file" id="editPdfFileInput" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.ppt,.pptx,.xls,.xlsx" multiple>
+            </div>
+            <div class="pdf-preview" id="editPdfPreview">
+              <div class="pdf-preview-header">
+                <div class="pdf-preview-title">New Files</div>
+                <div class="pdf-preview-icon"><i class="fas fa-file-pdf"></i></div>
+              </div>
+              <div id="editPdfPreviewList"></div>
+            </div>
           </div>
           <div style="margin-top:12px">
             <button id="edit_n_save" class="btn"><i class="fas fa-save"></i> Save Changes</button>
@@ -995,33 +1111,73 @@
       
       showModal(html)
       
-      let fileCount = note.attachments ? note.attachments.length : 0
-      
-      document.getElementById('edit_n_addfile').addEventListener('click', () => {
-        fileCount++
-        const fileDiv = document.createElement('div')
-        fileDiv.className = 'row'
-        fileDiv.style.marginTop = '8px'
-        fileDiv.innerHTML = `
-          <input type="text" placeholder="File Name" id="edit_n_file_name_${fileCount}" style="flex:1" />
-          <select id="edit_n_file_type_${fileCount}">
-            <option value="pdf">PDF</option>
-            <option value="document">Document</option>
-            <option value="image">Image</option>
-            <option value="spreadsheet">Spreadsheet</option>
-            <option value="presentation">Presentation</option>
-            <option value="video">Video</option>
-            <option value="audio">Audio</option>
-            <option value="archive">Archive</option>
-            <option value="code">Code</option>
-          </select>
-          <input type="text" placeholder="File URL" id="edit_n_file_url_${fileCount}" style="flex:2" />
-          <button type="button" class="btn danger" onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
-          </button>
-        `
-        document.getElementById('edit_n_files').appendChild(fileDiv)
-      })
+      // Set up the PDF upload functionality for edit
+      setTimeout(() => {
+        const uploadZone = document.getElementById('editPdfUploadZone')
+        const fileInput = document.getElementById('editPdfFileInput')
+        const pdfPreview = document.getElementById('editPdfPreview')
+        const pdfPreviewList = document.getElementById('editPdfPreviewList')
+        
+        // Click to open file dialog
+        uploadZone.addEventListener('click', () => {
+          fileInput.click()
+        })
+        
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => {
+          handleEditFiles(e.target.files)
+        })
+        
+        // Drag and drop functionality
+        uploadZone.addEventListener('dragover', (e) => {
+          e.preventDefault()
+          uploadZone.classList.add('active')
+        })
+        
+        uploadZone.addEventListener('dragleave', () => {
+          uploadZone.classList.remove('active')
+        })
+        
+        uploadZone.addEventListener('drop', (e) => {
+          e.preventDefault()
+          uploadZone.classList.remove('active')
+          handleEditFiles(e.dataTransfer.files)
+        })
+        
+        function handleEditFiles(files) {
+          if (files.length > 0) {
+            pdfPreview.classList.add('active')
+            
+            // Process each file
+            Array.from(files).forEach(file => {
+              const fileType = getFileType(file.name)
+              const fileSize = formatFileSize(file.size)
+              
+              const fileItem = document.createElement('div')
+              fileItem.className = 'file-attachment file-preview-item'
+              fileItem.dataset.name = file.name
+              fileItem.dataset.type = fileType
+              fileItem.dataset.size = fileSize
+              
+              fileItem.innerHTML = `
+                <div class="file-icon">
+                  <i class="fas fa-${getFileIcon(fileType)}"></i>
+                </div>
+                <div class="file-name">
+                  ${file.name} <span style="color:#9fc9ff;font-size:12px">(${fileSize})</span>
+                </div>
+                <div class="file-actions">
+                  <button class="file-btn" onclick="removeEditFilePreview(this)" title="Remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              `
+              
+              pdfPreviewList.appendChild(fileItem)
+            })
+          }
+        }
+      }, 100)
       
       document.getElementById('edit_n_cancel').addEventListener('click', closeModal)
       document.getElementById('edit_n_save').addEventListener('click', () => {
@@ -1035,35 +1191,33 @@
           return
         }
         
-        // Collect attachments
-        const attachments = []
-        for (let i = 0; i <= fileCount; i++) {
-          const nameEl = document.getElementById(`edit_n_file_name_${i}`)
-          const typeEl = document.getElementById(`edit_n_file_type_${i}`)
-          const urlEl = document.getElementById(`edit_n_file_url_${i}`)
+        // Get existing attachments that weren't deleted
+        const existingAttachments = note.attachments || []
+        
+        // Get new uploaded files from the preview area
+        const newAttachments = []
+        const fileElements = document.querySelectorAll('#editPdfPreviewList .file-preview-item')
+        fileElements.forEach(el => {
+          const name = el.dataset.name
+          const type = el.dataset.type
+          const size = el.dataset.size
+          const url = '#' // In a real app, this would be the uploaded file URL
           
-          if (nameEl && typeEl && urlEl) {
-            const name = nameEl.value.trim()
-            const type = typeEl.value
-            const url = urlEl.value.trim()
-            
-            if (name && url) {
-              attachments.push({
-                id: uid(),
-                name,
-                type,
-                url
-              })
-            }
-          }
-        }
+          newAttachments.push({
+            id: uid(),
+            name,
+            type,
+            url,
+            size
+          })
+        })
         
         // Update the note
         note.cls = cls
         note.subject = subject
         note.title = title
         note.body = body
-        note.attachments = attachments.length ? attachments : undefined
+        note.attachments = [...existingAttachments, ...newAttachments]
         
         save(state)
         addActivity(`Admin updated note: ${title} (Class ${cls})`)
@@ -1071,6 +1225,18 @@
         closeModal()
         alert('Note updated successfully')
       })
+    }
+    
+    function removeEditFilePreview(button) {
+      const fileItem = button.closest('.file-preview-item')
+      fileItem.remove()
+      
+      // Hide preview area if no files left
+      const pdfPreview = document.getElementById('editPdfPreview')
+      const fileItems = document.querySelectorAll('#editPdfPreviewList .file-preview-item')
+      if (fileItems.length === 0) {
+        pdfPreview.classList.remove('active')
+      }
     }
 
     function deleteNote(noteId) {
