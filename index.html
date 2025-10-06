@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pracheen Viggyan — Advanced Neon Learning Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ===== Reset & base ===== */
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;smooth-font-scaling:antialiased;background:linear-gradient(180deg,#0a0a0a 0%, #000000 100%);color:#ffffff;min-height:100vh}
+    a{color:inherit}
+
+    /* ===== Neon Variables ===== */
+    :root {
+      --neon-primary: #00ffcc;
+      --neon-secondary: #ff00ff;
+      --neon-accent: #ffff00;
+      --neon-bg: #0a0a0a;
+      --neon-card: #1a1a1a;
+      --neon-text: #ffffff;
+    }
+
+    /* ===== Layout ===== */
+    .container{max-width:1280px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;box-shadow:0 0 10px var(--neon-primary),0 0 20px var(--neon-primary)}
+    h1{font-size:24px;background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sub{font-size:14px;color:#cccccc}
+
+    /* ===== Card grid ===== */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+    .card{background:var(--neon-card);padding:20px;border-radius:16px;box-shadow:0 8px 25px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);transition:all 0.3s ease}
+    .card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(0,0,0,0.7);border-color:var(--neon-primary)}
+    
+    /* ===== Neon Effects ===== */
+    .neon-glow{box-shadow:0 0 10px var(--neon-primary),0 0 20px var(--neon-primary),0 0 40px var(--neon-primary)}
+    .neon-text{text-shadow:0 0 5px var(--neon-primary),0 0 10px var(--neon-primary)}
+    .neon-border{border:1px solid var(--neon-primary)}
+
+    /* ===== Controls ===== */
+    .topbar{display:flex;gap:12px;align-items:center}
+    .btn{background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));padding:10px 16px;border-radius:10px;color:#000;cursor:pointer;border:none;font-weight:600;transition:all 0.3s ease}
+    .btn:hover{opacity:0.9;transform:translateY(-2px)}
+    .btn.secondary{background:transparent;border:1px solid var(--neon-primary);color:var(--neon-primary)}
+    .search{background:var(--neon-card);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);min-width:220px;color:var(--neon-text);transition:all 0.3s ease}
+    .search:focus{border-color:var(--neon-primary);box-shadow:0 0 10px var(--neon-primary)}
+
+    /* ===== Forms & lists ===== */
+    label{display:block;font-size:14px;margin-bottom:6px;color:#cccccc}
+    input, select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:var(--neon-card);color:inherit;transition:all 0.3s ease}
+    input:focus, select:focus, textarea:focus{border-color:var(--neon-primary);box-shadow:0 0 10px var(--neon-primary)}
+    .muted{font-size:14px;color:#9fc9ff}
+
+    /* ===== Test UI ===== */
+    .note{background:linear-gradient(90deg,#06202b,#0b1b2b);padding:12px;border-radius:10px;border-left:4px solid var(--neon-primary)}
+
+    /* ===== Admin modal ===== */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000}
+    .modal{background:var(--neon-card);padding:24px;border-radius:16px;min-width:400px;max-width:90vw;max-height:90vh;overflow-y:auto;border:1px solid var(--neon-primary);box-shadow:0 0 20px var(--neon-primary)}
+
+    footer{margin-top:28px;color:#9fc9ff;font-size:14px;text-align:center}
+
+    /* responsive tweaks */
+    @media (max-width:768px){header{flex-direction:column;align-items:flex-start;gap:12px}.topbar{flex-direction:column;align-items:stretch}.grid{grid-template-columns:1fr}}
+
+    /* small helper styles */
+    .row{display:flex;gap:12px;align-items:center}
+    .space{flex:1}
+    .chip{padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:13px;border:1px solid rgba(255,255,255,0.1)}
+    .chip.primary{background:var(--neon-primary);color:#000}
+    .chip.secondary{background:var(--neon-secondary);color:#fff}
+    .danger{background:#ef4444;color:#fff}
+    .success{background:#16a34a;color:#fff}
+
+    /* results */
+    .results{margin-top:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);font-size:14px}
+
+    /* DPP Cards */
+    .dpp-card{background:var(--neon-card);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1);transition:all 0.3s ease}
+    .dpp-card:hover{border-color:var(--neon-primary);transform:translateY(-3px)}
+    .dpp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .dpp-title{font-weight:600;font-size:16px}
+    .dpp-meta{display:flex;gap:8px;font-size:12px;color:#cccccc}
+    .dpp-tag{background:var(--neon-primary);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+
+    /* Progress bars */
+    .progress-bar{width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;margin-top:8px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--neon-primary),var(--neon-secondary));border-radius:4px}
+
+    /* Floating animation */
+    .floating{animation:floating 3s ease-in-out infinite}
+    @keyframes floating{0%{transform:translateY(0px)}50%{transform:translateY(-10px)}100%{transform:translateY(0px)}}
+
+    /* Pulse animation */
+    .pulse{animation:pulse 2s infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+    /* Stats cards */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+    .stat-card{background:var(--neon-card);border-radius:10px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.1)}
+    .stat-value{font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stat-label{font-size:12px;color:#cccccc;margin-top:4px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo pulse">
+          <i class="fas fa-atom"></i>
+        </div>
+        <div>
+          <h1>Pracheen Viggyan Pro</h1>
+          <div class="sub">Advanced Neon Learning Hub — Classes 6 to 12</div>
+        </div>
+      </div>
+      <div class="topbar">
+        <input id="search" class="search" placeholder="Search notes, DPP, topics..." />
+        <button id="btnSignup" class="btn neon-glow">
+          <i class="fas fa-user-plus"></i> Sign up / Login
+        </button>
+        <button id="btnAdmin" class="btn secondary">
+          <i class="fas fa-lock"></i> Admin
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Stats Overview -->
+      <section class="card">
+        <h3 class="neon-text">Learning Dashboard</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">12</div>
+            <div class="stat-label">DPP Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">87%</div>
+            <div class="stat-label">Average Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">6</div>
+            <div class="stat-label">Active Subjects</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">24</div>
+            <div class="stat-label">Study Hours</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid" id="mainGrid">
+        <!-- Home cards -->
+        <div class="card floating">
+          <h3><i class="fas fa-graduation-cap"></i> Classes & Syllabus</h3>
+          <p class="muted">Browse materials by class from 6 to 12. Includes notes, DPP and practice sets.</p>
+          <div style="margin-top:16px">
+            <label for="classSelect">Select class</label>
+            <select id="classSelect"></select>
+            <div style="margin-top:12px" id="classSummary"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-sticky-note"></i> Notes & Resources</h3>
+          <p class="muted">Curated short notes for quick revision and concept clarity.</p>
+          <div id="notesList" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-tasks"></i> DPP (Daily Practice Problems)</h3>
+          <p class="muted">Physics Wallah-style practice problems with instant scoring.</p>
+          <div id="dppList" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-chart-line"></i> Progress & Analytics</h3>
+          <p class="muted">Your learning journey with detailed analytics and insights.</p>
+          <div id="progressArea" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+      <section style="margin-top:24px">
+        <div class="card">
+          <h3><i class="fas fa-rss"></i> Activity Feed</h3>
+          <p class="muted">Recent learning activities and achievements.</p>
+          <div id="feed" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <div class="neon-text">Advanced Neon Learning Platform</div>
+      <div>Built for immersive learning •  Works entirely in your browser</div>
+    </footer>
+  </div>
+
+  <!-- Modal area - reused -->
+  <div id="modalRoot" style="display:none"></div>
+
+  <script>
+    /*
+      Advanced Neon Learning Platform
+      - All data stored in localStorage under key 'pv_data'
+      - Admin password: PV 1234 (exact)
+      - Supports: signup/login, DPP tests, notes, admin dashboard
+      - PW-style DPP integration
+    */
+
+    // --- Utilities ---
+    const uid = ()=>Date.now().toString(36) + Math.random().toString(36).slice(2,8)
+    const PV_KEY = 'pv_data_v2'
+
+    // default seed data with DPP focus
+    const seed = {
+      users: [
+        {id:'admin',name:'Administrator',email:'admin@pv.local',role:'admin'}
+      ],
+      notes: [
+        {id:uid(),cls:6,title:'What is Science?',body:'Science is the study of the natural world through observation and experiment.',subject:'Science'},
+        {id:uid(),cls:9,title:'Fundamentals of Physics',body:'Physics studies matter, energy and their interactions. Key concepts: motion, forces, energy.',subject:'Physics'},
+        {id:uid(),cls:10,title:'Chemical Reactions',body:'Chemical reactions involve breaking and forming of chemical bonds.',subject:'Chemistry'},
+        {id:uid(),cls:11,title:'Calculus Basics',body:'Calculus is the mathematical study of continuous change.',subject:'Mathematics'}
+      ],
+      dpp: [
+        {id:uid(),cls:6,title:'DPP-1: Living Organisms',subject:'Science',date:'2023-10-15',questions:[
+          {q:'Which one is a living thing?',opts:['Rock','Tree','Plastic','Water'],a:1,difficulty:'Easy'},
+          {q:'Which gas do plants produce?',opts:['Oxygen','Carbon dioxide','Nitrogen','Hydrogen'],a:0,difficulty:'Easy'},
+          {q:'What is evaporation?',opts:['Liquid to solid','Solid to gas','Liquid to gas','Gas to liquid'],a:2,difficulty:'Medium'}
+        ]},
+        {id:uid(),cls:9,title:'DPP-2: Motion & Forces',subject:'Physics',date:'2023-10-16',questions:[
+          {q:'Unit of force?',opts:['Joule','Newton','Watt','Pascal'],a:1,difficulty:'Easy'},
+          {q:'Acceleration of free fall on earth?',opts:['9.8 m/s²','10 m/s²','8 m/s²','9 m/s'],a:0,difficulty:'Easy'},
+          {q:'Which law states F=ma?',opts:['Newton\'s 1st','Newton\'s 2nd','Newton\'s 3rd','Law of gravitation'],a:1,difficulty:'Medium'},
+          {q:'Momentum is product of?',opts:['Force and time','Mass and velocity','Mass and acceleration','Force and distance'],a:1,difficulty:'Medium'}
+        ]},
+        {id:uid(),cls:10,title:'DPP-1: Chemical Equations',subject:'Chemistry',date:'2023-10-17',questions:[
+          {q:'What is the formula for water?',opts:['H₂O','HO₂','H₂O₂','HO'],a:0,difficulty:'Easy'},
+          {q:'Balanced equation for photosynthesis?',opts:['6CO₂+6H₂O→C₆H₁₂O₆+6O₂','CO₂+H₂O→C₆H₁₂O₆+O₂','6CO₂+6H₂O→C₆H₁₂O₆+3O₂','CO₂+H₂O→Glucose+O₂'],a:0,difficulty:'Hard'}
+        ]},
+        {id:uid(),cls:11,title:'DPP-1: Limits & Derivatives',subject:'Mathematics',date:'2023-10-18',questions:[
+          {q:'Derivative of x²?',opts:['x','2x','x²','2x²'],a:1,difficulty:'Easy'},
+          {q:'lim(x→0) sin(x)/x = ?',opts:['0','1','∞','-1'],a:1,difficulty:'Medium'},
+          {q:'Derivative of e^x?',opts:['e^x','xe^x','e','0'],a:0,difficulty:'Easy'}
+        ]}
+      ],
+      activity:[
+        'System initialized with advanced DPP content',
+        'Sample users and learning materials loaded'
+      ]
+    }
+
+    function load(){
+      const raw = localStorage.getItem(PV_KEY)
+      if(!raw){localStorage.setItem(PV_KEY,JSON.stringify(seed));return JSON.parse(JSON.stringify(seed))}
+      try{return JSON.parse(raw)}catch(e){localStorage.setItem(PV_KEY,JSON.stringify(seed));return JSON.parse(JSON.stringify(seed))}
+    }
+    function save(state){localStorage.setItem(PV_KEY,JSON.stringify(state))}
+
+    let state = load()
+
+    // --- DOM refs ---
+    const classSelect = document.getElementById('classSelect')
+    const classSummary = document.getElementById('classSummary')
+    const notesList = document.getElementById('notesList')
+    const dppList = document.getElementById('dppList')
+    const feed = document.getElementById('feed')
+    const progressArea = document.getElementById('progressArea')
+    const btnSignup = document.getElementById('btnSignup')
+    const btnAdmin = document.getElementById('btnAdmin')
+    const search = document.getElementById('search')
+
+    let currentUser = null // will hold {id,name,email,role}
+
+    // --- Renderers ---
+    function renderClassOptions(){
+      classSelect.innerHTML = ''
+      for(let c=6;c<=12;c++){const opt=document.createElement('option');opt.value=c;opt.textContent='Class '+c;classSelect.appendChild(opt)}
+      classSelect.addEventListener('change',()=>renderMainForClass(parseInt(classSelect.value)))
+      renderMainForClass(6)
+    }
+
+    function renderMainForClass(cls){
+      classSummary.innerHTML = `<div class="note">Showing resources for <strong>Class ${cls}</strong>. Select DPP to practice.</div>`
+      renderNotes(cls)
+      renderDPP(cls)
+    }
+
+    function renderNotes(cls){
+      const notes = state.notes.filter(n=>n.cls==cls)
+      if(!notes.length){notesList.innerHTML = '<div class="muted">No notes for this class. Admin can add notes.</div>';return}
+      notesList.innerHTML = ''
+      notes.forEach(n=>{
+        const el = document.createElement('div');el.className='dpp-card'
+        el.innerHTML = `
+          <div class="dpp-header">
+            <div class="dpp-title">${n.title}</div>
+            <div class="dpp-tag">${n.subject}</div>
+          </div>
+          <div style="font-size:14px">${n.body}</div>
+        `
+        notesList.appendChild(el)
+      })
+    }
+
+    function renderDPP(cls){
+      const dpps = state.dpp.filter(d=>d.cls==cls)
+      dppList.innerHTML = ''
+      if(!dpps.length){dppList.innerHTML = '<div class="muted">No DPP available. Admin can add practice sets.</div>';return}
+      dpps.forEach(d=>{
+        const el = document.createElement('div');el.className='dpp-card'
+        el.innerHTML = `
+          <div class="dpp-header">
+            <div class="dpp-title">${d.title}</div>
+            <div class="dpp-tag">${d.subject}</div>
+          </div>
+          <div class="dpp-meta">
+            <span><i class="fas fa-calendar"></i> ${d.date}</span>
+            <span><i class="fas fa-question-circle"></i> ${d.questions.length} questions</span>
+            <span><i class="fas fa-signal"></i> ${getDifficultyLabel(d.questions)}</span>
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn" data-id="${d.id}" style="width:100%">
+              <i class="fas fa-play-circle"></i> Start DPP
+            </button>
+          </div>
+        `
+        dppList.appendChild(el)
+      })
+
+      // attach handlers
+      dppList.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>openDPP(b.dataset.id)))
+    }
+
+    function getDifficultyLabel(questions) {
+      const levels = questions.map(q => q.difficulty);
+      if (levels.includes('Hard')) return 'Advanced';
+      if (levels.includes('Medium')) return 'Intermediate';
+      return 'Beginner';
+    }
+
+    function renderFeed(){
+      feed.innerHTML = ''
+      const items = state.activity.slice().reverse()
+      if(!items.length){feed.innerHTML = '<div class=muted>No recent activity.</div>';return}
+      items.forEach(it=>{
+        const d=document.createElement('div');d.className='dpp-card';d.style.marginBottom='8px'
+        d.innerHTML = `<div style="font-size:14px"><i class="fas fa-bell" style="color:var(--neon-primary)"></i> ${it}</div>`
+        feed.appendChild(d)
+      })
+    }
+
+    function renderProgress(){
+      const data = JSON.parse(localStorage.getItem('pv_user_progress')||'{}')
+      if(!currentUser){progressArea.innerHTML = '<div class="note">Login to track your learning progress.</div>';return}
+      const p = data[currentUser.id]||[]
+      if(!p.length){progressArea.innerHTML = '<div class="note">No DPP completed yet. Start practicing!</div>';return}
+      
+      // Calculate stats
+      const totalDPP = p.length
+      const avgScore = p.reduce((sum, r) => sum + (r.score/r.total*100), 0) / totalDPP
+      const recentDPP = p.slice(-5)
+      
+      let html = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">${totalDPP}</div>
+            <div class="stat-label">DPP Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${Math.round(avgScore)}%</div>
+            <div class="stat-label">Average Score</div>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <h4>Recent DPP Performance</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>DPP</th>
+                <th>Score</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+      `
+      recentDPP.forEach(r=>{
+        html += `<tr>
+          <td>${r.title}</td>
+          <td>${r.score}/${r.total}</td>
+          <td>${new Date(r.at).toLocaleDateString()}</td>
+        </tr>`
+      })
+      html += '</tbody></table></div>'
+      progressArea.innerHTML = html
+    }
+
+    // --- Authentication UI ---
+    btnSignup.addEventListener('click',()=>openAuthModal())
+    btnAdmin.addEventListener('click',()=>openAdminModal())
+
+    function openAuthModal(){
+      showModal(`
+        <h3 class="neon-text"><i class="fas fa-user-circle"></i> Login / Signup</h3>
+        <div style="margin-top:16px">
+          <label>Name</label>
+          <input id="ui_name" placeholder="Your name" />
+          <label style="margin-top:12px">Email</label>
+          <input id="ui_email" placeholder="your@email.local" />
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button id="ui_signup" class="btn"><i class="fas fa-user-plus"></i> Sign up</button>
+            <button id="ui_login" class="btn secondary"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <div class="space"></div>
+            <button id="ui_close" class="btn secondary">Close</button>
+          </div>
+        </div>
+      `)
+
+      document.getElementById('ui_close').addEventListener('click',closeModal)
+      document.getElementById('ui_signup').addEventListener('click',()=>{
+        const name=document.getElementById('ui_name').value.trim();const email=document.getElementById('ui_email').value.trim().toLowerCase();
+        if(!name||!email){alert('Enter name and email');return}
+        const id = uid()
+        const user = {id,name,email,role:'student'}
+        state.users.push(user);save(state)
+        addActivity(`${name} signed up (${email})`)
+        currentUser = user
+        closeModal();renderLoggedIn()
+      })
+      document.getElementById('ui_login').addEventListener('click',()=>{
+        const email=document.getElementById('ui_email').value.trim().toLowerCase();
+        if(!email){alert('Enter email to login') ;return}
+        const user = state.users.find(u=>u.email===email)
+        if(!user){alert('No account with that email. Use Sign up.');return}
+        currentUser = user;addActivity(`${user.name} logged in`);closeModal();renderLoggedIn()
+      })
+    }
+
+    function renderLoggedIn(){
+      btnSignup.innerHTML = currentUser ? `<i class="fas fa-user"></i> ${currentUser.name} (${currentUser.role})` : '<i class="fas fa-user-plus"></i> Sign up / Login'
+      renderProgress();renderFeed()
+    }
+
+    // --- Admin ---
+    function openAdminModal(){
+      showModal(`<h3 class="neon-text"><i class="fas fa-lock"></i> Admin Access</h3>
+        <div style="margin-top:12px">
+          <label>Enter Admin Password</label>
+          <input id="admin_pwd" placeholder="Enter password" type="password" />
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button id="admin_ok" class="btn"><i class="fas fa-key"></i> Unlock</button>
+            <button id="admin_cancel" class="btn secondary">Cancel</button>
+          </div>
+        </div>
+      `)
+      document.getElementById('admin_cancel').addEventListener('click',closeModal)
+      document.getElementById('admin_ok').addEventListener('click',()=>{
+        const val = document.getElementById('admin_pwd').value.trim()
+        if(val==='PV 1234' || val==='PV1234' || val==='pv 1234'){
+          closeModal();openAdminPanel()
+        } else {
+          alert('Wrong admin password')
+        }
+      })
+    }
+
+    function openAdminPanel(){
+      showModal(`<h3 class="neon-text"><i class="fas fa-cogs"></i> Admin Dashboard</h3>
+        <div style="margin-top:16px">
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px">
+            <button id="adm_users" class="btn secondary"><i class="fas fa-users"></i> Users</button>
+            <button id="adm_addnote" class="btn"><i class="fas fa-sticky-note"></i> Add Note</button>
+            <button id="adm_adddpp" class="btn"><i class="fas fa-tasks"></i> Add DPP</button>
+            <button id="adm_close" class="btn secondary">Close</button>
+          </div>
+          <div id="adm_area"></div>
+        </div>
+      `, {wide:true})
+
+      document.getElementById('adm_close').addEventListener('click',closeModal)
+      document.getElementById('adm_users').addEventListener('click',()=>{
+        const html = `<div>
+          <h4><i class="fas fa-users"></i> Registered Users</h4>
+          <div class=results>
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${state.users.map(u=>`<tr><td>${u.name}</td><td>${u.email||'-'}</td><td>${u.role}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`
+        document.getElementById('adm_area').innerHTML = html
+      })
+
+      document.getElementById('adm_addnote').addEventListener('click',()=>{
+        const html = `
+          <h4><i class="fas fa-sticky-note"></i> Add Note</h4>
+          <label>Class</label>
+          <select id="n_cls">${[6,7,8,9,10,11,12].map(x=>`<option value="${x}">Class ${x}</option>`).join('')}</select>
+          <label>Subject</label>
+          <select id="n_subject">
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Biology">Biology</option>
+            <option value="Science">Science</option>
+            <option value="Social Science">Social Science</option>
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+          </select>
+          <label>Title</label>
+          <input id="n_title" />
+          <label>Body</label>
+          <textarea id="n_body" rows=4></textarea>
+          <div style="margin-top:12px">
+            <button id="n_save" class="btn"><i class="fas fa-save"></i> Save Note</button>
+          </div>
+        `
+        document.getElementById('adm_area').innerHTML = html
+        document.getElementById('n_save').addEventListener('click',()=>{
+          const cls = parseInt(document.getElementById('n_cls').value); 
+          const subject = document.getElementById('n_subject').value;
+          const t=document.getElementById('n_title').value.trim(); 
+          const b=document.getElementById('n_body').value.trim();
+          if(!t||!b){alert('Enter title and body');return}
+          state.notes.push({id:uid(),cls,subject,title:t,body:b})
+          save(state);addActivity(`Admin added note: ${t} (Class ${cls})`);renderMainForClass(cls);alert('Saved');
+        })
+      })
+
+      document.getElementById('adm_adddpp').addEventListener('click',()=>{
+        const html = `
+          <h4><i class="fas fa-tasks"></i> Add DPP</h4>
+          <label>Class</label>
+          <select id="t_cls">${[6,7,8,9,10,11,12].map(x=>`<option value="${x}">Class ${x}</option>`).join('')}</select>
+          <label>Subject</label>
+          <select id="t_subject">
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Biology">Biology</option>
+            <option value="Science">Science</option>
+          </select>
+          <label>Title</label>
+          <input id="t_title" placeholder="DPP-1: Topic Name" />
+          <label>Date</label>
+          <input id="t_date" type="date" />
+          <label>Questions (JSON)</label>
+          <textarea id="t_json" rows=6 placeholder='[{"q":"Question?","opts":["Option A","Option B","Option C","Option D"],"a":0,"difficulty":"Easy"}]'></textarea>
+          <div style="margin-top:12px">
+            <button id="t_save" class="btn"><i class="fas fa-save"></i> Save DPP</button>
+          </div>
+        `
+        document.getElementById('adm_area').innerHTML = html
+        document.getElementById('t_date').valueAsDate = new Date();
+        document.getElementById('t_save').addEventListener('click',()=>{
+          try{
+            const cls=parseInt(document.getElementById('t_cls').value); 
+            const subject=document.getElementById('t_subject').value;
+            const title=document.getElementById('t_title').value.trim(); 
+            const date=document.getElementById('t_date').value;
+            const qjson=document.getElementById('t_json').value.trim();
+            if(!title||!qjson) {alert('Enter title and questions JSON');return}
+            const questions = JSON.parse(qjson)
+            state.dpp.push({id:uid(),cls,subject,title,date,questions});save(state);addActivity(`Admin added DPP: ${title} (Class ${cls})`);renderMainForClass(cls);alert('Saved')
+          }catch(e){alert('Invalid JSON for questions: '+e.message)}
+        })
+      })
+    }
+
+    // --- DPP runner ---
+    function openDPP(dppId){
+      const dpp = state.dpp.find(d=>d.id===dppId); if(!dpp){alert('DPP not found');return}
+      // build DPP UI
+      let ix = 0; const answers = []
+      const container = document.createElement('div')
+      function showQuestion(){
+        const q = dpp.questions[ix]
+        container.innerHTML = `
+          <h3 class="neon-text">${dpp.title}</h3>
+          <div class="dpp-meta" style="margin-top:8px">
+            <span><i class="fas fa-book"></i> ${dpp.subject}</span>
+            <span><i class="fas fa-calendar"></i> ${dpp.date}</span>
+            <span><i class="fas fa-signal"></i> ${q.difficulty}</span>
+          </div>
+          <div style="margin-top:16px;background:var(--neon-card);padding:16px;border-radius:12px">
+            <div style="font-size:18px;margin-bottom:12px"><strong>Q${ix+1}.</strong> ${q.q}</div>
+            <div>${q.opts.map((o,i)=>`
+              <div style="margin:10px 0;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.1)" class="option" data-value="${i}">
+                <input type="radio" name="ans" value="${i}" style="margin-right:8px" /> ${o}
+              </div>
+            `).join('')}</div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button id="prev" class="btn secondary" ${ix===0?'disabled':''}><i class="fas fa-arrow-left"></i> Previous</button>
+            <div class="space"></div>
+            <button id="next" class="btn">${ix===dpp.questions.length-1? '<i class="fas fa-flag-checkered"></i> Submit' : '<i class="fas fa-arrow-right"></i> Next'}</button>
+          </div>
+          <div style="margin-top:12px;text-align:center;color:#cccccc">
+            Question ${ix+1} of ${dpp.questions.length}
+          </div>
+        `
+        document.getElementById('prev').addEventListener('click',()=>{ if(ix>0){ix--;showQuestion()} })
+        document.getElementById('next').addEventListener('click',()=>{
+          const sel = container.querySelector('input[name=ans]:checked')
+          answers[ix] = sel?parseInt(sel.value):null
+          if(ix===dpp.questions.length-1){submit() ; return}
+          ix++;showQuestion()
+        })
+        
+        // Add click handlers for option cards
+        container.querySelectorAll('.option').forEach(opt => {
+          opt.addEventListener('click', (e) => {
+            const radio = opt.querySelector('input[type="radio"]')
+            radio.checked = true
+            // Update visual selection
+            container.querySelectorAll('.option').forEach(o => o.style.borderColor = 'rgba(255,255,255,0.1)')
+            opt.style.borderColor = 'var(--neon-primary)'
+          })
+        })
+        
+        // restore selected if previously answered
+        if(typeof answers[ix] === 'number'){
+          const el = container.querySelector(`input[name=ans][value="${answers[ix]}"]`)
+          if(el) {
+            el.checked = true
+            el.closest('.option').style.borderColor = 'var(--neon-primary)'
+          }
+        }
+      }
+      function submit(){
+        let score=0; let total=dpp.questions.length
+        for(let i=0;i<total;i++){if(answers[i]===dpp.questions[i].a)score++}
+        // store progress
+        const raw = JSON.parse(localStorage.getItem('pv_user_progress')||'{}')
+        if(currentUser){
+          raw[currentUser.id]=raw[currentUser.id]||[];
+          raw[currentUser.id].push({
+            dppId:dpp.id,
+            title:dpp.title,
+            score, 
+            total, 
+            at:Date.now(),
+            subject: dpp.subject
+          });
+          localStorage.setItem('pv_user_progress',JSON.stringify(raw))
+        }
+        addActivity(`${currentUser?currentUser.name:'Guest'} completed DPP: ${dpp.title} — Score ${score}/${total}`)
+        showModal(`
+          <h3 class="neon-text"><i class="fas fa-trophy"></i> DPP Result</h3>
+          <div style="text-align:center;margin-top:16px">
+            <div style="font-size:48px;background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:bold">
+              ${score}/${total}
+            </div>
+            <div style="margin-top:8px;font-size:18px">${score/total*100}% Correct</div>
+            <div style="margin-top:16px">
+              <button id="r_ok" class="btn" style="width:100%"><i class="fas fa-check"></i> Continue Learning</button>
+            </div>
+          </div>
+        `)
+        document.getElementById('r_ok').addEventListener('click',()=>{closeModal();renderProgress()})
+      }
+      showModal(container.outerHTML, {wide: true})
+      // after modal created, re-run to attach handlers inside the modal root
+      setTimeout(()=>{
+        // find the container in modal and reattach
+        const modalArea = document.getElementById('modalRoot')
+        const qcont = modalArea.querySelector('div')
+        qcont && (function(){
+          // overwrite container to point to inner
+          container.innerHTML = qcont.innerHTML
+          qcont.replaceWith(container)
+          showQuestion()
+        })()
+      },50)
+    }
+
+    // --- Activity helper ---
+    function addActivity(text){state.activity.push(text);if(state.activity.length>200)state.activity.shift();save(state);renderFeed()}
+
+    // --- Modal helpers ---
+    function showModal(html,opts={}){
+      const root = document.getElementById('modalRoot')
+      root.style.display = 'block'
+      root.innerHTML = `<div class="overlay"><div class="modal" style="${opts.wide? 'min-width:720px':''}">${html}</div></div>`
+      root.querySelector('.overlay').addEventListener('click', (e)=>{ if(e.target.classList.contains('overlay')) closeModal() })
+    }
+    function closeModal(){const root=document.getElementById('modalRoot');root.style.display='none';root.innerHTML=''}
+
+    // --- Search ---
+    search.addEventListener('keyup',e=>{
+      const q=e.target.value.trim().toLowerCase(); if(!q){renderMainForClass(parseInt(classSelect.value));return}
+      const notes = state.notes.filter(n=>n.title.toLowerCase().includes(q)||n.body.toLowerCase().includes(q)||n.subject.toLowerCase().includes(q))
+      const dpps = state.dpp.filter(d=>d.title.toLowerCase().includes(q)||d.subject.toLowerCase().includes(q)||d.questions.some(qq=>qq.q.toLowerCase().includes(q)))
+      notesList.innerHTML = notes.length? notes.map(n=>`
+        <div class="dpp-card">
+          <div class="dpp-header">
+            <div class="dpp-title">${n.title}</div>
+            <div class="dpp-tag">${n.subject}</div>
+          </div>
+          <div style="font-size:14px">${n.body}</div>
+        </div>
+      `).join('') : '<div class="muted">No matching notes</div>'
+      dppList.innerHTML = dpps.length? dpps.map(d=>`
+        <div class="dpp-card">
+          <div class="dpp-header">
+            <div class="dpp-title">${d.title}</div>
+            <div class="dpp-tag">${d.subject}</div>
+          </div>
+          <div class="dpp-meta">
+            <span><i class="fas fa-calendar"></i> ${d.date}</span>
+            <span><i class="fas fa-question-circle"></i> ${d.questions.length} questions</span>
+            <span><i class="fas fa-signal"></i> ${getDifficultyLabel(d.questions)}</span>
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn" data-id="${d.id}" style="width:100%">
+              <i class="fas fa-play-circle"></i> Start DPP
+            </button>
+          </div>
+        </div>
+      `).join('') : '<div class="muted">No matching DPP</div>'
+      // attach handlers for search results
+      dppList.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>openDPP(b.dataset.id)))
+    })
+
+    // --- Init ---
+    renderClassOptions();renderFeed();renderLoggedIn()
+
+    // expose some debug helpers to window for local tinkering
+    window._pv = {state,save,reset:()=>{if(confirm('Reset local PV data?')){localStorage.removeItem(PV_KEY);localStorage.removeItem('pv_user_progress');state = load();location.reload()}}}
+
+    // short note: to save locally, simply save the html file and open in browser. All data is in localStorage for that origin.
+  </script>
+</body>
+</html>
