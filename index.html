@@ -136,6 +136,19 @@
     .pdf-preview-title{font-weight:600;font-size:16px}
     .pdf-preview-icon{color:var(--neon-primary);font-size:20px}
     .pdf-preview-info{display:flex;gap:12px;font-size:12px;color:#cccccc}
+
+    /* Timer */
+    .timer-display{position:fixed;top:20px;right:20px;background:var(--neon-card);padding:12px 16px;border-radius:10px;border:1px solid var(--neon-primary);box-shadow:0 0 10px var(--neon-primary);z-index:1000;font-size:18px;font-weight:bold}
+    .timer-warning{color:#f59e0b;animation:pulse 1s infinite}
+    .timer-danger{color:#ef4444;animation:pulse 0.5s infinite}
+
+    /* Question form */
+    .question-form{background:rgba(255,255,255,0.05);border-radius:8px;padding:16px;margin-bottom:16px}
+    .question-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .question-number{font-weight:600;font-size:16px}
+    .option-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .option-input{flex:1}
+    .correct-option{display:flex;align-items:center;gap:8px;margin-top:12px}
   </style>
 </head>
 <body>
@@ -228,7 +241,7 @@
 
     <footer>
       <div class="neon-text">Advanced Neon Learning Platform</div>
-      <div>Built for immersive learning • New Era Of Learning • Works entirely in your browser</div>
+      <div>Built for immersive learning • Admin password: <strong>PV 1234</strong> • Works entirely in your browser</div>
     </footer>
   </div>
 
@@ -242,7 +255,7 @@
       - Admin password: PV 1234 (exact)
       - Supports: signup/login, DPP tests, notes, admin dashboard
       - PW-style DPP integration
-      - NEW: PDF Upload functionality with drag & drop
+      - NEW: Downloadable files, DPP timer system, visual question builder
     */
 
     // --- Utilities ---
@@ -256,35 +269,35 @@
       ],
       notes: [
         {id:uid(),cls:6,title:'What is Science?',body:'Science is the study of the natural world through observation and experiment.',subject:'Science', attachments: [
-          {id: uid(), name: 'science_intro.pdf', url: '#', type: 'pdf', size: '2.4 MB'},
-          {id: uid(), name: 'lab_safety.docx', url: '#', type: 'document', size: '1.1 MB'}
+          {id: uid(), name: 'science_intro.pdf', url: '#', type: 'pdf', size: '2.4 MB', content: 'This is a sample PDF content for science introduction.'},
+          {id: uid(), name: 'lab_safety.docx', url: '#', type: 'document', size: '1.1 MB', content: 'This is a sample document content for lab safety.'}
         ]},
         {id:uid(),cls:9,title:'Fundamentals of Physics',body:'Physics studies matter, energy and their interactions. Key concepts: motion, forces, energy.',subject:'Physics', attachments: [
-          {id: uid(), name: 'physics_formulas.pdf', url: '#', type: 'pdf', size: '3.2 MB'}
+          {id: uid(), name: 'physics_formulas.pdf', url: '#', type: 'pdf', size: '3.2 MB', content: 'This is a sample PDF content for physics formulas.'}
         ]},
         {id:uid(),cls:10,title:'Chemical Reactions',body:'Chemical reactions involve breaking and forming of chemical bonds.',subject:'Chemistry'},
         {id:uid(),cls:11,title:'Calculus Basics',body:'Calculus is the mathematical study of continuous change.',subject:'Mathematics', attachments: [
-          {id: uid(), name: 'calculus_exercises.pdf', url: '#', type: 'pdf', size: '4.7 MB'},
-          {id: uid(), name: 'derivatives_cheatsheet.png', url: '#', type: 'image', size: '0.8 MB'}
+          {id: uid(), name: 'calculus_exercises.pdf', url: '#', type: 'pdf', size: '4.7 MB', content: 'This is a sample PDF content for calculus exercises.'},
+          {id: uid(), name: 'derivatives_cheatsheet.png', url: '#', type: 'image', size: '0.8 MB', content: 'This is a sample image content for derivatives cheatsheet.'}
         ]}
       ],
       dpp: [
-        {id:uid(),cls:6,title:'DPP-1: Living Organisms',subject:'Science',date:'2023-10-15',questions:[
+        {id:uid(),cls:6,title:'DPP-1: Living Organisms',subject:'Science',date:'2023-10-15',timer:10,questions:[
           {q:'Which one is a living thing?',opts:['Rock','Tree','Plastic','Water'],a:1,difficulty:'Easy'},
           {q:'Which gas do plants produce?',opts:['Oxygen','Carbon dioxide','Nitrogen','Hydrogen'],a:0,difficulty:'Easy'},
           {q:'What is evaporation?',opts:['Liquid to solid','Solid to gas','Liquid to gas','Gas to liquid'],a:2,difficulty:'Medium'}
         ]},
-        {id:uid(),cls:9,title:'DPP-2: Motion & Forces',subject:'Physics',date:'2023-10-16',questions:[
+        {id:uid(),cls:9,title:'DPP-2: Motion & Forces',subject:'Physics',date:'2023-10-16',timer:20,questions:[
           {q:'Unit of force?',opts:['Joule','Newton','Watt','Pascal'],a:1,difficulty:'Easy'},
           {q:'Acceleration of free fall on earth?',opts:['9.8 m/s²','10 m/s²','8 m/s²','9 m/s'],a:0,difficulty:'Easy'},
           {q:'Which law states F=ma?',opts:['Newton\'s 1st','Newton\'s 2nd','Newton\'s 3rd','Law of gravitation'],a:1,difficulty:'Medium'},
           {q:'Momentum is product of?',opts:['Force and time','Mass and velocity','Mass and acceleration','Force and distance'],a:1,difficulty:'Medium'}
         ]},
-        {id:uid(),cls:10,title:'DPP-1: Chemical Equations',subject:'Chemistry',date:'2023-10-17',questions:[
+        {id:uid(),cls:10,title:'DPP-1: Chemical Equations',subject:'Chemistry',date:'2023-10-17',timer:15,questions:[
           {q:'What is the formula for water?',opts:['H₂O','HO₂','H₂O₂','HO'],a:0,difficulty:'Easy'},
           {q:'Balanced equation for photosynthesis?',opts:['6CO₂+6H₂O→C₆H₁₂O₆+6O₂','CO₂+H₂O→C₆H₁₂O₆+O₂','6CO₂+6H₂O→C₆H₁₂O₆+3O₂','CO₂+H₂O→Glucose+O₂'],a:0,difficulty:'Hard'}
         ]},
-        {id:uid(),cls:11,title:'DPP-1: Limits & Derivatives',subject:'Mathematics',date:'2023-10-18',questions:[
+        {id:uid(),cls:11,title:'DPP-1: Limits & Derivatives',subject:'Mathematics',date:'2023-10-18',timer:25,questions:[
           {q:'Derivative of x²?',opts:['x','2x','x²','2x²'],a:1,difficulty:'Easy'},
           {q:'lim(x→0) sin(x)/x = ?',opts:['0','1','∞','-1'],a:1,difficulty:'Medium'},
           {q:'Derivative of e^x?',opts:['e^x','xe^x','e','0'],a:0,difficulty:'Easy'}
@@ -317,6 +330,7 @@
     const search = document.getElementById('search')
 
     let currentUser = null // will hold {id,name,email,role}
+    let timerInterval = null // for DPP timer
 
     // --- Renderers ---
     function renderClassOptions(){
@@ -351,7 +365,7 @@
                   </div>
                   <div class="file-name">${a.name} <span style="color:#9fc9ff;font-size:12px">(${a.size || 'Unknown size'})</span></div>
                   <div class="file-actions">
-                    <button class="file-btn" onclick="downloadFile('${a.url}', '${a.name}')" title="Download">
+                    <button class="file-btn" onclick="downloadFile('${a.id}', '${n.id}')" title="Download">
                       <i class="fas fa-download"></i>
                     </button>
                     ${currentUser && currentUser.role === 'admin' ? `
@@ -417,6 +431,7 @@
           <div class="dpp-meta">
             <span><i class="fas fa-calendar"></i> ${d.date}</span>
             <span><i class="fas fa-question-circle"></i> ${d.questions.length} questions</span>
+            <span><i class="fas fa-clock"></i> ${d.timer} minutes</span>
             <span><i class="fas fa-signal"></i> ${getDifficultyLabel(d.questions)}</span>
           </div>
           <div style="margin-top:10px;display:flex;gap:8px">
@@ -668,13 +683,16 @@
             const name = el.dataset.name
             const type = el.dataset.type
             const size = el.dataset.size
-            const url = '#' // In a real app, this would be the uploaded file URL
+            
+            // In a real app, you would upload the file to a server
+            // For demo, we'll create a simple content string
+            const content = `This is the content of ${name}. In a real application, this would be the actual file data.`
             
             attachments.push({
               id: uid(),
               name,
               type,
-              url,
+              content,
               size
             })
           })
@@ -711,25 +729,149 @@
           <input id="t_title" placeholder="DPP-1: Topic Name" />
           <label>Date</label>
           <input id="t_date" type="date" />
-          <label>Questions (JSON)</label>
-          <textarea id="t_json" rows=6 placeholder='[{"q":"Question?","opts":["Option A","Option B","Option C","Option D"],"a":0,"difficulty":"Easy"}]'></textarea>
+          <label>Timer (minutes)</label>
+          <select id="t_timer">
+            <option value="5">5 minutes</option>
+            <option value="10" selected>10 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="20">20 minutes</option>
+            <option value="25">25 minutes</option>
+            <option value="30">30 minutes</option>
+          </select>
+          <div id="questionsContainer" style="margin-top:16px">
+            <h5>Questions</h5>
+            <div id="questionsList"></div>
+            <button type="button" id="addQuestion" class="btn secondary" style="margin-top:12px">
+              <i class="fas fa-plus"></i> Add Question
+            </button>
+          </div>
           <div style="margin-top:12px">
             <button id="t_save" class="btn"><i class="fas fa-save"></i> Save DPP</button>
           </div>
         `
         document.getElementById('adm_area').innerHTML = html
         document.getElementById('t_date').valueAsDate = new Date();
+        
+        let questionCount = 0
+        
+        // Add first question
+        addQuestionForm()
+        
+        document.getElementById('addQuestion').addEventListener('click', addQuestionForm)
+        
+        function addQuestionForm() {
+          questionCount++
+          const questionId = `q${questionCount}`
+          const questionDiv = document.createElement('div')
+          questionDiv.className = 'question-form'
+          questionDiv.id = `question-${questionId}`
+          questionDiv.innerHTML = `
+            <div class="question-header">
+              <div class="question-number">Question ${questionCount}</div>
+              <button type="button" class="btn danger" onclick="removeQuestion('${questionId}')" style="padding:4px 8px">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <label>Question</label>
+            <textarea id="${questionId}_text" rows="2" placeholder="Enter question text"></textarea>
+            <label>Options</label>
+            <div class="option-row">
+              <span>A)</span>
+              <input type="text" id="${questionId}_opt0" class="option-input" placeholder="Option A">
+            </div>
+            <div class="option-row">
+              <span>B)</span>
+              <input type="text" id="${questionId}_opt1" class="option-input" placeholder="Option B">
+            </div>
+            <div class="option-row">
+              <span>C)</span>
+              <input type="text" id="${questionId}_opt2" class="option-input" placeholder="Option C">
+            </div>
+            <div class="option-row">
+              <span>D)</span>
+              <input type="text" id="${questionId}_opt3" class="option-input" placeholder="Option D">
+            </div>
+            <div class="correct-option">
+              <label>Correct Answer:</label>
+              <select id="${questionId}_correct">
+                <option value="0">A</option>
+                <option value="1">B</option>
+                <option value="2">C</option>
+                <option value="3">D</option>
+              </select>
+              <select id="${questionId}_difficulty">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+          `
+          document.getElementById('questionsList').appendChild(questionDiv)
+        }
+        
         document.getElementById('t_save').addEventListener('click',()=>{
           try{
             const cls=parseInt(document.getElementById('t_cls').value); 
             const subject=document.getElementById('t_subject').value;
             const title=document.getElementById('t_title').value.trim(); 
             const date=document.getElementById('t_date').value;
-            const qjson=document.getElementById('t_json').value.trim();
-            if(!title||!qjson) {alert('Enter title and questions JSON');return}
-            const questions = JSON.parse(qjson)
-            state.dpp.push({id:uid(),cls,subject,title,date,questions});save(state);addActivity(`Admin added DPP: ${title} (Class ${cls})`);renderMainForClass(cls);alert('Saved')
-          }catch(e){alert('Invalid JSON for questions: '+e.message)}
+            const timer=parseInt(document.getElementById('t_timer').value);
+            
+            if(!title) {alert('Enter title');return}
+            
+            // Collect questions
+            const questions = []
+            for (let i = 1; i <= questionCount; i++) {
+              const qId = `q${i}`
+              const questionEl = document.getElementById(`${qId}_text`)
+              if (!questionEl) continue
+              
+              const questionText = questionEl.value.trim()
+              if (!questionText) continue
+              
+              const opts = [
+                document.getElementById(`${qId}_opt0`).value.trim(),
+                document.getElementById(`${qId}_opt1`).value.trim(),
+                document.getElementById(`${qId}_opt2`).value.trim(),
+                document.getElementById(`${qId}_opt3`).value.trim()
+              ]
+              
+              // Check if any option is empty
+              if (opts.some(opt => !opt)) {
+                alert(`All options must be filled for Question ${i}`)
+                return
+              }
+              
+              const correct = parseInt(document.getElementById(`${qId}_correct`).value)
+              const difficulty = document.getElementById(`${qId}_difficulty`).value
+              
+              questions.push({
+                q: questionText,
+                opts: opts,
+                a: correct,
+                difficulty: difficulty
+              })
+            }
+            
+            if (questions.length === 0) {
+              alert('Add at least one question')
+              return
+            }
+            
+            state.dpp.push({
+              id:uid(),
+              cls,
+              subject,
+              title,
+              date,
+              timer,
+              questions
+            })
+            save(state)
+            addActivity(`Admin added DPP: ${title} (Class ${cls})`)
+            renderMainForClass(cls)
+            alert('Saved')
+          }catch(e){alert('Error: '+e.message)}
         })
       })
 
@@ -790,6 +932,7 @@
                     <th>Title</th>
                     <th>Subject</th>
                     <th>Questions</th>
+                    <th>Timer</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -800,6 +943,7 @@
                       <td>${d.title}</td>
                       <td>${d.subject}</td>
                       <td>${d.questions.length}</td>
+                      <td>${d.timer} min</td>
                       <td>
                         <button class="btn danger" onclick="deleteDPP('${d.id}')" style="padding:4px 8px;font-size:12px">
                           <i class="fas fa-trash"></i>
@@ -925,12 +1069,34 @@
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }
 
-    // --- DPP runner ---
+    // --- DPP runner with Timer ---
     function openDPP(dppId){
       const dpp = state.dpp.find(d=>d.id===dppId); if(!dpp){alert('DPP not found');return}
+      
+      // Calculate total time in seconds
+      let timeLeft = dpp.timer * 60
+      
+      // Create timer display
+      const timerDisplay = document.createElement('div')
+      timerDisplay.className = 'timer-display'
+      timerDisplay.id = 'dppTimer'
+      updateTimerDisplay(timerDisplay, timeLeft)
+      
+      // Start timer
+      const timerInterval = setInterval(() => {
+        timeLeft--
+        updateTimerDisplay(timerDisplay, timeLeft)
+        
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval)
+          submitDPP()
+        }
+      }, 1000)
+      
       // build DPP UI
       let ix = 0; const answers = []
       const container = document.createElement('div')
+      
       function showQuestion(){
         const q = dpp.questions[ix]
         container.innerHTML = `
@@ -961,7 +1127,7 @@
         document.getElementById('next').addEventListener('click',()=>{
           const sel = container.querySelector('input[name=ans]:checked')
           answers[ix] = sel?parseInt(sel.value):null
-          if(ix===dpp.questions.length-1){submit() ; return}
+          if(ix===dpp.questions.length-1){submitDPP() ; return}
           ix++;showQuestion()
         })
         
@@ -985,9 +1151,31 @@
           }
         }
       }
-      function submit(){
+      
+      function updateTimerDisplay(timerEl, seconds) {
+        const minutes = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        timerEl.innerHTML = `<i class="fas fa-clock"></i> ${minutes}:${secs < 10 ? '0' : ''}${secs}`
+        
+        // Change color based on time left
+        if (seconds < 60) {
+          timerEl.classList.add('timer-danger')
+          timerEl.classList.remove('timer-warning')
+        } else if (seconds < 180) {
+          timerEl.classList.add('timer-warning')
+          timerEl.classList.remove('timer-danger')
+        } else {
+          timerEl.classList.remove('timer-warning', 'timer-danger')
+        }
+      }
+      
+      function submitDPP() {
+        clearInterval(timerInterval)
+        document.getElementById('dppTimer')?.remove()
+        
         let score=0; let total=dpp.questions.length
         for(let i=0;i<total;i++){if(answers[i]===dpp.questions[i].a)score++}
+        
         // store progress
         const raw = JSON.parse(localStorage.getItem('pv_user_progress')||'{}')
         if(currentUser){
@@ -1002,14 +1190,18 @@
           });
           localStorage.setItem('pv_user_progress',JSON.stringify(raw))
         }
-        addActivity(`${currentUser?currentUser.name:'Guest'} completed DPP: ${dpp.title} — Score ${score}/${total}`)
+        
+        const timeUp = timeLeft <= 0
+        addActivity(`${currentUser?currentUser.name:'Guest'} completed DPP: ${dpp.title} — Score ${score}/${total}${timeUp ? ' (Time Up!)' : ''}`)
+        
         showModal(`
           <h3 class="neon-text"><i class="fas fa-trophy"></i> DPP Result</h3>
           <div style="text-align:center;margin-top:16px">
+            ${timeUp ? '<div class="note" style="margin-bottom:16px"><i class="fas fa-clock"></i> Time is up!</div>' : ''}
             <div style="font-size:48px;background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:bold">
               ${score}/${total}
             </div>
-            <div style="margin-top:8px;font-size:18px">${score/total*100}% Correct</div>
+            <div style="margin-top:8px;font-size:18px">${Math.round(score/total*100)}% Correct</div>
             <div style="margin-top:16px">
               <button id="r_ok" class="btn" style="width:100%"><i class="fas fa-check"></i> Continue Learning</button>
             </div>
@@ -1017,7 +1209,15 @@
         `)
         document.getElementById('r_ok').addEventListener('click',()=>{closeModal();renderProgress()})
       }
+      
       showModal(container.outerHTML, {wide: true})
+      
+      // Add timer to modal
+      setTimeout(() => {
+        const modalArea = document.getElementById('modalRoot')
+        modalArea.appendChild(timerDisplay)
+      }, 100)
+      
       // after modal created, re-run to attach handlers inside the modal root
       setTimeout(()=>{
         // find the container in modal and reattach
@@ -1030,6 +1230,34 @@
           showQuestion()
         })()
       },50)
+    }
+
+    // --- File Download Functionality ---
+    function downloadFile(attachmentId, noteId) {
+      const note = state.notes.find(n => n.id === noteId)
+      if (!note || !note.attachments) return
+      
+      const attachment = note.attachments.find(a => a.id === attachmentId)
+      if (!attachment) return
+      
+      // Create a blob with the file content
+      const blob = new Blob([attachment.content], { type: 'application/octet-stream' })
+      const url = URL.createObjectURL(blob)
+      
+      // Create a temporary link to trigger download
+      const a = document.createElement('a')
+      a.href = url
+      a.download = attachment.name
+      document.body.appendChild(a)
+      a.click()
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }, 100)
+      
+      addActivity(`Downloaded file: ${attachment.name}`)
     }
 
     // --- Note Management Functions ---
@@ -1072,7 +1300,7 @@
               </div>
               <div class="file-name">${a.name} <span style="color:#9fc9ff;font-size:12px">(${a.size || 'Unknown size'})</span></div>
               <div class="file-actions">
-                <button class="file-btn" onclick="downloadFile('${a.url}', '${a.name}')" title="Download">
+                <button class="file-btn" onclick="downloadFile('${a.id}', '${note.id}')" title="Download">
                   <i class="fas fa-download"></i>
                 </button>
                 <button class="file-btn" onclick="deleteAttachment('${note.id}', '${a.id}')" title="Delete">
@@ -1201,13 +1429,16 @@
           const name = el.dataset.name
           const type = el.dataset.type
           const size = el.dataset.size
-          const url = '#' // In a real app, this would be the uploaded file URL
+          
+          // In a real app, you would upload the file to a server
+          // For demo, we'll create a simple content string
+          const content = `This is the content of ${name}. In a real application, this would be the actual file data.`
           
           newAttachments.push({
             id: uid(),
             name,
             type,
-            url,
+            content,
             size
           })
         })
@@ -1236,6 +1467,13 @@
       const fileItems = document.querySelectorAll('#editPdfPreviewList .file-preview-item')
       if (fileItems.length === 0) {
         pdfPreview.classList.remove('active')
+      }
+    }
+    
+    function removeQuestion(questionId) {
+      const questionEl = document.getElementById(`question-${questionId}`)
+      if (questionEl) {
+        questionEl.remove()
       }
     }
 
@@ -1308,12 +1546,6 @@
       alert('Attachment deleted successfully')
     }
 
-    function downloadFile(url, name) {
-      // In a real app, this would download the file
-      // For demo purposes, we'll just show a message
-      alert(`Downloading: ${name}\nURL: ${url}`)
-    }
-
     // --- Activity helper ---
     function addActivity(text){state.activity.push(text);if(state.activity.length>200)state.activity.shift();save(state);renderFeed()}
 
@@ -1324,7 +1556,23 @@
       root.innerHTML = `<div class="overlay"><div class="modal" style="${opts.wide? 'min-width:720px':''}">${html}</div></div>`
       root.querySelector('.overlay').addEventListener('click', (e)=>{ if(e.target.classList.contains('overlay')) closeModal() })
     }
-    function closeModal(){const root=document.getElementById('modalRoot');root.style.display='none';root.innerHTML=''}
+    function closeModal(){
+      const root=document.getElementById('modalRoot')
+      root.style.display='none'
+      root.innerHTML=''
+      
+      // Clear any timer intervals
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        timerInterval = null
+      }
+      
+      // Remove timer display if exists
+      const timerDisplay = document.getElementById('dppTimer')
+      if (timerDisplay) {
+        timerDisplay.remove()
+      }
+    }
 
     // --- Search ---
     search.addEventListener('keyup',e=>{
@@ -1349,6 +1597,7 @@
           <div class="dpp-meta">
             <span><i class="fas fa-calendar"></i> ${d.date}</span>
             <span><i class="fas fa-question-circle"></i> ${d.questions.length} questions</span>
+            <span><i class="fas fa-clock"></i> ${d.timer} minutes</span>
             <span><i class="fas fa-signal"></i> ${getDifficultyLabel(d.questions)}</span>
           </div>
           <div style="margin-top:10px">
