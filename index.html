@@ -45,6 +45,8 @@
     .btn{background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));padding:10px 16px;border-radius:10px;color:#000;cursor:pointer;border:none;font-weight:600;transition:all 0.3s ease}
     .btn:hover{opacity:0.9;transform:translateY(-2px)}
     .btn.secondary{background:transparent;border:1px solid var(--neon-primary);color:var(--neon-primary)}
+    .btn.danger{background:#ef4444;color:#fff}
+    .btn.warning{background:#f59e0b;color:#fff}
     .search{background:var(--neon-card);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);min-width:220px;color:var(--neon-text);transition:all 0.3s ease}
     .search:focus{border-color:var(--neon-primary);box-shadow:0 0 10px var(--neon-primary)}
 
@@ -105,6 +107,18 @@
     .stat-card{background:var(--neon-card);border-radius:10px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.1)}
     .stat-value{font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--neon-primary),var(--neon-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .stat-label{font-size:12px;color:#cccccc;margin-top:4px}
+
+    /* File attachments */
+    .file-attachment{display:flex;align-items:center;gap:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;margin-top:8px;border:1px solid rgba(255,255,255,0.1);transition:all 0.3s ease}
+    .file-attachment:hover{border-color:var(--neon-primary)}
+    .file-icon{font-size:16px;color:var(--neon-primary)}
+    .file-name{font-size:14px;flex:1}
+    .file-actions{display:flex;gap:4px}
+    .file-btn{background:transparent;border:none;color:#ccc;cursor:pointer;padding:4px;border-radius:4px;transition:all 0.3s ease}
+    .file-btn:hover{color:var(--neon-primary);background:rgba(255,255,255,0.1)}
+
+    /* Delete confirmation */
+    .delete-confirm{background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:8px;padding:12px;margin-top:12px}
   </style>
 </head>
 <body>
@@ -197,7 +211,7 @@
 
     <footer>
       <div class="neon-text">Advanced Neon Learning Platform</div>
-      <div>Built for immersive learning •  Works entirely in your browser</div>
+      <div>Built for immersive learning • Admin password: <strong>PV 1234</strong> • Works entirely in your browser</div>
     </footer>
   </div>
 
@@ -211,6 +225,7 @@
       - Admin password: PV 1234 (exact)
       - Supports: signup/login, DPP tests, notes, admin dashboard
       - PW-style DPP integration
+      - NEW: File attachments for notes, delete functionality
     */
 
     // --- Utilities ---
@@ -223,10 +238,18 @@
         {id:'admin',name:'Administrator',email:'admin@pv.local',role:'admin'}
       ],
       notes: [
-        {id:uid(),cls:6,title:'What is Science?',body:'Science is the study of the natural world through observation and experiment.',subject:'Science'},
-        {id:uid(),cls:9,title:'Fundamentals of Physics',body:'Physics studies matter, energy and their interactions. Key concepts: motion, forces, energy.',subject:'Physics'},
+        {id:uid(),cls:6,title:'What is Science?',body:'Science is the study of the natural world through observation and experiment.',subject:'Science', attachments: [
+          {id: uid(), name: 'science_intro.pdf', url: '#', type: 'pdf'},
+          {id: uid(), name: 'lab_safety.docx', url: '#', type: 'document'}
+        ]},
+        {id:uid(),cls:9,title:'Fundamentals of Physics',body:'Physics studies matter, energy and their interactions. Key concepts: motion, forces, energy.',subject:'Physics', attachments: [
+          {id: uid(), name: 'physics_formulas.pdf', url: '#', type: 'pdf'}
+        ]},
         {id:uid(),cls:10,title:'Chemical Reactions',body:'Chemical reactions involve breaking and forming of chemical bonds.',subject:'Chemistry'},
-        {id:uid(),cls:11,title:'Calculus Basics',body:'Calculus is the mathematical study of continuous change.',subject:'Mathematics'}
+        {id:uid(),cls:11,title:'Calculus Basics',body:'Calculus is the mathematical study of continuous change.',subject:'Mathematics', attachments: [
+          {id: uid(), name: 'calculus_exercises.pdf', url: '#', type: 'pdf'},
+          {id: uid(), name: 'derivatives_cheatsheet.png', url: '#', type: 'image'}
+        ]}
       ],
       dpp: [
         {id:uid(),cls:6,title:'DPP-1: Living Organisms',subject:'Science',date:'2023-10-15',questions:[
@@ -298,15 +321,69 @@
       notesList.innerHTML = ''
       notes.forEach(n=>{
         const el = document.createElement('div');el.className='dpp-card'
+        
+        let attachmentsHtml = ''
+        if (n.attachments && n.attachments.length) {
+          attachmentsHtml = `
+            <div style="margin-top:12px">
+              <div style="font-size:12px;color:#cccccc;margin-bottom:6px">Attachments:</div>
+              ${n.attachments.map(a => `
+                <div class="file-attachment">
+                  <div class="file-icon">
+                    <i class="fas fa-${getFileIcon(a.type)}"></i>
+                  </div>
+                  <div class="file-name">${a.name}</div>
+                  <div class="file-actions">
+                    <button class="file-btn" onclick="downloadFile('${a.url}', '${a.name}')" title="Download">
+                      <i class="fas fa-download"></i>
+                    </button>
+                    ${currentUser && currentUser.role === 'admin' ? `
+                      <button class="file-btn" onclick="deleteAttachment('${n.id}', '${a.id}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `
+        }
+        
         el.innerHTML = `
           <div class="dpp-header">
             <div class="dpp-title">${n.title}</div>
             <div class="dpp-tag">${n.subject}</div>
           </div>
           <div style="font-size:14px">${n.body}</div>
+          ${attachmentsHtml}
+          ${currentUser && currentUser.role === 'admin' ? `
+            <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+              <button class="btn warning" onclick="editNote('${n.id}')" style="padding:6px 12px;font-size:12px">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn danger" onclick="deleteNote('${n.id}')" style="padding:6px 12px;font-size:12px">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          ` : ''}
         `
         notesList.appendChild(el)
       })
+    }
+
+    function getFileIcon(type) {
+      const iconMap = {
+        'pdf': 'file-pdf',
+        'document': 'file-word',
+        'image': 'file-image',
+        'spreadsheet': 'file-excel',
+        'presentation': 'file-powerpoint',
+        'video': 'file-video',
+        'audio': 'file-audio',
+        'archive': 'file-archive',
+        'code': 'file-code'
+      }
+      return iconMap[type] || 'file'
     }
 
     function renderDPP(cls){
@@ -325,17 +402,22 @@
             <span><i class="fas fa-question-circle"></i> ${d.questions.length} questions</span>
             <span><i class="fas fa-signal"></i> ${getDifficultyLabel(d.questions)}</span>
           </div>
-          <div style="margin-top:10px">
-            <button class="btn" data-id="${d.id}" style="width:100%">
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn" data-id="${d.id}" style="flex:1">
               <i class="fas fa-play-circle"></i> Start DPP
             </button>
+            ${currentUser && currentUser.role === 'admin' ? `
+              <button class="btn danger" onclick="deleteDPP('${d.id}')" style="padding:6px 12px">
+                <i class="fas fa-trash"></i>
+              </button>
+            ` : ''}
           </div>
         `
         dppList.appendChild(el)
       })
 
       // attach handlers
-      dppList.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>openDPP(b.dataset.id)))
+      dppList.querySelectorAll('button.btn:not(.danger)').forEach(b=>b.addEventListener('click',()=>openDPP(b.dataset.id)))
     }
 
     function getDifficultyLabel(questions) {
@@ -477,6 +559,8 @@
             <button id="adm_users" class="btn secondary"><i class="fas fa-users"></i> Users</button>
             <button id="adm_addnote" class="btn"><i class="fas fa-sticky-note"></i> Add Note</button>
             <button id="adm_adddpp" class="btn"><i class="fas fa-tasks"></i> Add DPP</button>
+            <button id="adm_managenotes" class="btn secondary"><i class="fas fa-list"></i> Manage Notes</button>
+            <button id="adm_managedpp" class="btn secondary"><i class="fas fa-list"></i> Manage DPP</button>
             <button id="adm_close" class="btn secondary">Close</button>
           </div>
           <div id="adm_area"></div>
@@ -525,19 +609,88 @@
           <input id="n_title" />
           <label>Body</label>
           <textarea id="n_body" rows=4></textarea>
+          <div id="n_attachments">
+            <label>Attachments</label>
+            <div id="n_files"></div>
+            <button type="button" id="n_addfile" class="btn secondary" style="margin-top:8px">
+              <i class="fas fa-plus"></i> Add Attachment
+            </button>
+          </div>
           <div style="margin-top:12px">
             <button id="n_save" class="btn"><i class="fas fa-save"></i> Save Note</button>
           </div>
         `
         document.getElementById('adm_area').innerHTML = html
+        let fileCount = 0
+        
+        document.getElementById('n_addfile').addEventListener('click', () => {
+          fileCount++
+          const fileDiv = document.createElement('div')
+          fileDiv.className = 'row'
+          fileDiv.style.marginTop = '8px'
+          fileDiv.innerHTML = `
+            <input type="text" placeholder="File Name" id="n_file_name_${fileCount}" style="flex:1" />
+            <select id="n_file_type_${fileCount}">
+              <option value="pdf">PDF</option>
+              <option value="document">Document</option>
+              <option value="image">Image</option>
+              <option value="spreadsheet">Spreadsheet</option>
+              <option value="presentation">Presentation</option>
+              <option value="video">Video</option>
+              <option value="audio">Audio</option>
+              <option value="archive">Archive</option>
+              <option value="code">Code</option>
+            </select>
+            <input type="text" placeholder="File URL" id="n_file_url_${fileCount}" style="flex:2" />
+            <button type="button" class="btn danger" onclick="this.parentElement.remove()">
+              <i class="fas fa-times"></i>
+            </button>
+          `
+          document.getElementById('n_files').appendChild(fileDiv)
+        })
+        
         document.getElementById('n_save').addEventListener('click',()=>{
           const cls = parseInt(document.getElementById('n_cls').value); 
           const subject = document.getElementById('n_subject').value;
           const t=document.getElementById('n_title').value.trim(); 
           const b=document.getElementById('n_body').value.trim();
           if(!t||!b){alert('Enter title and body');return}
-          state.notes.push({id:uid(),cls,subject,title:t,body:b})
-          save(state);addActivity(`Admin added note: ${t} (Class ${cls})`);renderMainForClass(cls);alert('Saved');
+          
+          // Collect attachments
+          const attachments = []
+          for (let i = 1; i <= fileCount; i++) {
+            const nameEl = document.getElementById(`n_file_name_${i}`)
+            const typeEl = document.getElementById(`n_file_type_${i}`)
+            const urlEl = document.getElementById(`n_file_url_${i}`)
+            
+            if (nameEl && typeEl && urlEl) {
+              const name = nameEl.value.trim()
+              const type = typeEl.value
+              const url = urlEl.value.trim()
+              
+              if (name && url) {
+                attachments.push({
+                  id: uid(),
+                  name,
+                  type,
+                  url
+                })
+              }
+            }
+          }
+          
+          state.notes.push({
+            id:uid(),
+            cls,
+            subject,
+            title:t,
+            body:b,
+            attachments: attachments.length ? attachments : undefined
+          })
+          save(state);
+          addActivity(`Admin added note: ${t} (Class ${cls})`);
+          renderMainForClass(cls);
+          alert('Saved');
         })
       })
 
@@ -578,6 +731,89 @@
             state.dpp.push({id:uid(),cls,subject,title,date,questions});save(state);addActivity(`Admin added DPP: ${title} (Class ${cls})`);renderMainForClass(cls);alert('Saved')
           }catch(e){alert('Invalid JSON for questions: '+e.message)}
         })
+      })
+
+      document.getElementById('adm_managenotes').addEventListener('click', () => {
+        let html = `<h4><i class="fas fa-sticky-note"></i> Manage Notes</h4>`
+        
+        if (!state.notes.length) {
+          html += '<div class="muted">No notes found.</div>'
+        } else {
+          html += `
+            <div class="results">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Class</th>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${state.notes.map(n => `
+                    <tr>
+                      <td>${n.cls}</td>
+                      <td>${n.title}</td>
+                      <td>${n.subject}</td>
+                      <td>
+                        <button class="btn warning" onclick="editNote('${n.id}')" style="padding:4px 8px;font-size:12px">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn danger" onclick="deleteNote('${n.id}')" style="padding:4px 8px;font-size:12px">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `
+        }
+        
+        document.getElementById('adm_area').innerHTML = html
+      })
+
+      document.getElementById('adm_managedpp').addEventListener('click', () => {
+        let html = `<h4><i class="fas fa-tasks"></i> Manage DPP</h4>`
+        
+        if (!state.dpp.length) {
+          html += '<div class="muted">No DPP found.</div>'
+        } else {
+          html += `
+            <div class="results">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Class</th>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Questions</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${state.dpp.map(d => `
+                    <tr>
+                      <td>${d.cls}</td>
+                      <td>${d.title}</td>
+                      <td>${d.subject}</td>
+                      <td>${d.questions.length}</td>
+                      <td>
+                        <button class="btn danger" onclick="deleteDPP('${d.id}')" style="padding:4px 8px;font-size:12px">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `
+        }
+        
+        document.getElementById('adm_area').innerHTML = html
       })
     }
 
@@ -686,6 +922,230 @@
           showQuestion()
         })()
       },50)
+    }
+
+    // --- Note Management Functions ---
+    function editNote(noteId) {
+      const note = state.notes.find(n => n.id === noteId)
+      if (!note) return
+      
+      let html = `
+        <h3 class="neon-text"><i class="fas fa-edit"></i> Edit Note</h3>
+        <div style="margin-top:16px">
+          <label>Class</label>
+          <select id="edit_n_cls">${[6,7,8,9,10,11,12].map(x=>`<option value="${x}" ${x === note.cls ? 'selected' : ''}>Class ${x}</option>`).join('')}</select>
+          <label>Subject</label>
+          <select id="edit_n_subject">
+            <option value="Physics" ${note.subject === 'Physics' ? 'selected' : ''}>Physics</option>
+            <option value="Chemistry" ${note.subject === 'Chemistry' ? 'selected' : ''}>Chemistry</option>
+            <option value="Mathematics" ${note.subject === 'Mathematics' ? 'selected' : ''}>Mathematics</option>
+            <option value="Biology" ${note.subject === 'Biology' ? 'selected' : ''}>Biology</option>
+            <option value="Science" ${note.subject === 'Science' ? 'selected' : ''}>Science</option>
+            <option value="Social Science" ${note.subject === 'Social Science' ? 'selected' : ''}>Social Science</option>
+            <option value="English" ${note.subject === 'English' ? 'selected' : ''}>English</option>
+            <option value="Hindi" ${note.subject === 'Hindi' ? 'selected' : ''}>Hindi</option>
+          </select>
+          <label>Title</label>
+          <input id="edit_n_title" value="${note.title}" />
+          <label>Body</label>
+          <textarea id="edit_n_body" rows=4>${note.body}</textarea>
+          <div id="edit_n_attachments">
+            <label>Attachments</label>
+            <div id="edit_n_files">
+      `
+      
+      // Add existing attachments
+      if (note.attachments && note.attachments.length) {
+        note.attachments.forEach((a, index) => {
+          html += `
+            <div class="row" style="margin-top:8px">
+              <input type="text" value="${a.name}" id="edit_n_file_name_${index}" style="flex:1" />
+              <select id="edit_n_file_type_${index}">
+                <option value="pdf" ${a.type === 'pdf' ? 'selected' : ''}>PDF</option>
+                <option value="document" ${a.type === 'document' ? 'selected' : ''}>Document</option>
+                <option value="image" ${a.type === 'image' ? 'selected' : ''}>Image</option>
+                <option value="spreadsheet" ${a.type === 'spreadsheet' ? 'selected' : ''}>Spreadsheet</option>
+                <option value="presentation" ${a.type === 'presentation' ? 'selected' : ''}>Presentation</option>
+                <option value="video" ${a.type === 'video' ? 'selected' : ''}>Video</option>
+                <option value="audio" ${a.type === 'audio' ? 'selected' : ''}>Audio</option>
+                <option value="archive" ${a.type === 'archive' ? 'selected' : ''}>Archive</option>
+                <option value="code" ${a.type === 'code' ? 'selected' : ''}>Code</option>
+              </select>
+              <input type="text" value="${a.url}" id="edit_n_file_url_${index}" style="flex:2" />
+              <button type="button" class="btn danger" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          `
+        })
+      }
+      
+      html += `
+            </div>
+            <button type="button" id="edit_n_addfile" class="btn secondary" style="margin-top:8px">
+              <i class="fas fa-plus"></i> Add Attachment
+            </button>
+          </div>
+          <div style="margin-top:12px">
+            <button id="edit_n_save" class="btn"><i class="fas fa-save"></i> Save Changes</button>
+            <button id="edit_n_cancel" class="btn secondary">Cancel</button>
+          </div>
+        </div>
+      `
+      
+      showModal(html)
+      
+      let fileCount = note.attachments ? note.attachments.length : 0
+      
+      document.getElementById('edit_n_addfile').addEventListener('click', () => {
+        fileCount++
+        const fileDiv = document.createElement('div')
+        fileDiv.className = 'row'
+        fileDiv.style.marginTop = '8px'
+        fileDiv.innerHTML = `
+          <input type="text" placeholder="File Name" id="edit_n_file_name_${fileCount}" style="flex:1" />
+          <select id="edit_n_file_type_${fileCount}">
+            <option value="pdf">PDF</option>
+            <option value="document">Document</option>
+            <option value="image">Image</option>
+            <option value="spreadsheet">Spreadsheet</option>
+            <option value="presentation">Presentation</option>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+            <option value="archive">Archive</option>
+            <option value="code">Code</option>
+          </select>
+          <input type="text" placeholder="File URL" id="edit_n_file_url_${fileCount}" style="flex:2" />
+          <button type="button" class="btn danger" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        `
+        document.getElementById('edit_n_files').appendChild(fileDiv)
+      })
+      
+      document.getElementById('edit_n_cancel').addEventListener('click', closeModal)
+      document.getElementById('edit_n_save').addEventListener('click', () => {
+        const cls = parseInt(document.getElementById('edit_n_cls').value)
+        const subject = document.getElementById('edit_n_subject').value
+        const title = document.getElementById('edit_n_title').value.trim()
+        const body = document.getElementById('edit_n_body').value.trim()
+        
+        if (!title || !body) {
+          alert('Enter title and body')
+          return
+        }
+        
+        // Collect attachments
+        const attachments = []
+        for (let i = 0; i <= fileCount; i++) {
+          const nameEl = document.getElementById(`edit_n_file_name_${i}`)
+          const typeEl = document.getElementById(`edit_n_file_type_${i}`)
+          const urlEl = document.getElementById(`edit_n_file_url_${i}`)
+          
+          if (nameEl && typeEl && urlEl) {
+            const name = nameEl.value.trim()
+            const type = typeEl.value
+            const url = urlEl.value.trim()
+            
+            if (name && url) {
+              attachments.push({
+                id: uid(),
+                name,
+                type,
+                url
+              })
+            }
+          }
+        }
+        
+        // Update the note
+        note.cls = cls
+        note.subject = subject
+        note.title = title
+        note.body = body
+        note.attachments = attachments.length ? attachments : undefined
+        
+        save(state)
+        addActivity(`Admin updated note: ${title} (Class ${cls})`)
+        renderMainForClass(cls)
+        closeModal()
+        alert('Note updated successfully')
+      })
+    }
+
+    function deleteNote(noteId) {
+      const note = state.notes.find(n => n.id === noteId)
+      if (!note) return
+      
+      showModal(`
+        <h3 class="neon-text"><i class="fas fa-trash"></i> Delete Note</h3>
+        <div class="delete-confirm">
+          <p>Are you sure you want to delete the note "<strong>${note.title}</strong>"?</p>
+          <p>This action cannot be undone.</p>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button id="confirm_delete_note" class="btn danger">Yes, Delete</button>
+          <button id="cancel_delete" class="btn secondary">Cancel</button>
+        </div>
+      `)
+      
+      document.getElementById('cancel_delete').addEventListener('click', closeModal)
+      document.getElementById('confirm_delete_note').addEventListener('click', () => {
+        state.notes = state.notes.filter(n => n.id !== noteId)
+        save(state)
+        addActivity(`Admin deleted note: ${note.title}`)
+        renderMainForClass(parseInt(classSelect.value))
+        closeModal()
+        alert('Note deleted successfully')
+      })
+    }
+
+    function deleteDPP(dppId) {
+      const dpp = state.dpp.find(d => d.id === dppId)
+      if (!dpp) return
+      
+      showModal(`
+        <h3 class="neon-text"><i class="fas fa-trash"></i> Delete DPP</h3>
+        <div class="delete-confirm">
+          <p>Are you sure you want to delete the DPP "<strong>${dpp.title}</strong>"?</p>
+          <p>This action cannot be undone.</p>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button id="confirm_delete_dpp" class="btn danger">Yes, Delete</button>
+          <button id="cancel_delete" class="btn secondary">Cancel</button>
+        </div>
+      `)
+      
+      document.getElementById('cancel_delete').addEventListener('click', closeModal)
+      document.getElementById('confirm_delete_dpp').addEventListener('click', () => {
+        state.dpp = state.dpp.filter(d => d.id !== dppId)
+        save(state)
+        addActivity(`Admin deleted DPP: ${dpp.title}`)
+        renderMainForClass(parseInt(classSelect.value))
+        closeModal()
+        alert('DPP deleted successfully')
+      })
+    }
+
+    function deleteAttachment(noteId, attachmentId) {
+      const note = state.notes.find(n => n.id === noteId)
+      if (!note || !note.attachments) return
+      
+      note.attachments = note.attachments.filter(a => a.id !== attachmentId)
+      if (note.attachments.length === 0) {
+        delete note.attachments
+      }
+      
+      save(state)
+      addActivity(`Admin deleted attachment from note: ${note.title}`)
+      renderMainForClass(parseInt(classSelect.value))
+      alert('Attachment deleted successfully')
+    }
+
+    function downloadFile(url, name) {
+      // In a real app, this would download the file
+      // For demo purposes, we'll just show a message
+      alert(`Downloading: ${name}\nURL: ${url}`)
     }
 
     // --- Activity helper ---
