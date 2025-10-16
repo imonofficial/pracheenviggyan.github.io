@@ -1,1 +1,1 @@
-# pracheenviggyan.github.io
+# PrimeBeatsIndia.github.io
